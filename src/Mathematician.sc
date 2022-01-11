@@ -1,5 +1,4 @@
 
-
 def square(x: Int) = x * x
 square(5)
 
@@ -16,13 +15,11 @@ def calculate(n: Int): Unit = {
   @tailrec
   def tailFunc(n:Int, m:Int, flag:Boolean) :Unit = {
     print(m + ", ")
-    if (!flag && n == m) return
     if (flag) {
       if (m - 4 > 0) tailFunc(n, m - 4, flag =true)
       else tailFunc(n, m - 4, flag = false)
-    } else tailFunc(n, m + 4, flag = false)
+    } else if (n != m) tailFunc(n, m + 4, flag = false)
   }
-
   tailFunc(n, m, flag =true)
 }
 calculate(13)
@@ -35,26 +32,21 @@ calculate(16)
   Third is a retries list which specifies count of retries and the pauses between attempts.
 */
 
+@tailrec
 def retry[T](block: () => T,
              accept: T => Boolean,
              retries: List[Long]): T = {
-  val count = retries(0)
-  var pause = retries(1)
-  try {
-    val result = block()
-    if (accept(result)) {
-      println("Retry success " + result)
-      return result
-    }
-    else {
-      if(count >0) {
-        Thread.sleep(pause)
-        if (retries.size == 3) pause = retries(2)
-        retry(block, accept, List(count-1, pause))
-      } else throw new RuntimeException("Retry failed")
-    }
-  } catch {
-    case e: Exception => throw new Exception("Retry aborted \n" + e )
+
+  val result = block()
+  if (accept(result)) {
+    println("Retry success " + result)
+    result
+  }
+  else {
+    if (retries.nonEmpty) {
+      Thread.sleep(retries.head)
+      retry(block, accept, retries.tail)
+    } else throw new RuntimeException("Retry failed")
   }
 }
 
@@ -62,7 +54,7 @@ def retry[T](block: () => T,
 var test = retry[Int](
   block = () =>square(6),
   accept = res => res > 10,
-  retries = List(2, 1000, 2000)
+  retries = List(1000, 2000, 3000)
 )
 
 
