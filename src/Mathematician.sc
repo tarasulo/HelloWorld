@@ -56,6 +56,3 @@ var test = retry[Int](
   accept = res => res > 10,
   retries = List(1000, 2000, 3000)
 )
-
-
-
